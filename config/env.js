@@ -128,6 +128,7 @@ function getClientEnvironment(publicUrl) {
         LEADER_ACCOUNT_BSC: process.env.LEADER_ACCOUNT_BSC,
         
         IS_MAINTENANCE: process.env.IS_MAINTENANCE,
+        TRANSAK_URL: process.env.TRANSAK_URL,
       },
     );
   // Stringify all values so we can feed into Webpack DefinePlugin

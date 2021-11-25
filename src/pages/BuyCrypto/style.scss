@@ -1,0 +1,29 @@
+.buy-base-container {
+  width: 100%;
+  padding: 0 4rem;
+}
+.buy-convert-grid {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0 35px;
+  justify-content: center;
+}
+
+.transak-container,
+.convert-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.light {
+  &.buy-base-container{
+    color: black;
+  }
+}
+
+.dark {
+  &.buy-base-container{
+    color: white;
+  }
+}

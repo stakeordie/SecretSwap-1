@@ -5,14 +5,9 @@ import { Providers } from './Providers';
 import { Redirect, Route, Switch } from 'react-router';
 import { ActionModals } from './components/ActionModals';
 import { EthBridge } from './pages/EthBridge';
-import { Explorer } from './pages/Explorer';
-import { Tokens } from './pages/Tokens';
 import { SwapPageWrapper } from './pages/Swap';
 import { SwapPagePool } from './pages/Pool';
 import { InfoModal } from './components/InfoModal';
-import { EarnRewards } from './pages/Earn';
-import { FAQPage } from './pages/FAQ';
-import { FinancePage } from './pages/Finance';
 import { SeFiPage } from './pages/SeFi';
 import { Cashback } from './pages/Cashback'
 import { Governance } from 'pages/Governance';
@@ -20,6 +15,7 @@ import CreateProposal from 'pages/CreateProposal';
 import { DetailProposal } from 'pages/DetailProposal';
 import SefiStaking from 'pages/SefiStaking';
 import { Migration } from 'pages/Migration';
+import BuyCrypto  from 'pages/BuyCrypto';
 import './notifications.css'
 export const App: React.FC = () => (
   <Providers>
@@ -34,12 +30,7 @@ export const App: React.FC = () => (
         <Route exact path="/proposal/:id" component={DetailProposal} />
         <Route exact path="/sefistaking" component={SefiStaking} />
         <Route exact path="/migration" component={Migration} />
-        {/* <Route exact path="/faq" component={FAQPage} /> */}
-        {/* <Route exact path="/finance" component={FinancePage} /> */}
-        {/* <Route exact path="/info" component={InfoPage} /> */}
-        {/* <Route exact path="/explorer" component={Explorer} /> */}
-        {/* <Route exact path="/earn" component={EarnRewards} /> */}
-        {/* <Route exact path="/:token" component={EthBridge} /> */}
+        <Route exact path="/buy" component={BuyCrypto} />
         <Route exact path="/:token/operations/:operationId" component={EthBridge} />
         <Redirect to="/swap" />
       </Switch>
