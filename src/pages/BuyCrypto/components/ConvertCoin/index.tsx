@@ -1,7 +1,10 @@
+import { unlockJsx } from 'components/Header/utils';
 import React from 'react';
 import { Button, Input } from 'semantic-ui-react';
-import { divDecimals } from 'utils';
+import { formatWithSixDecimals, unlockToken } from 'utils';
 import './style.scss';
+
+const FEE = 0.04;
 
 const ConvertCoin = ({
   title,
@@ -11,20 +14,29 @@ const ConvertCoin = ({
   token,
   amount,
   loading,
-  onConvert,
+  style,
+  createVK,
+  onSubmit,
   setAmount,
 }: ConvertCoinProps) => {
   const isDark = theme == 'dark';
+
   const setWithdrawPercentage = (n: number) => {
     const a = parseFloat(token.balance);
     if (isNaN(a) || !a) {
       return;
     }
-    setAmount(parseFloat(divDecimals(a * n, token.decimals)));
+    let amount_formatted = parseFloat(formatWithSixDecimals(a * n));
+
+    if (token.symbol == 'SCRT' && n == 1) {
+      setAmount((amount_formatted - FEE).toFixed(6));
+    } else {
+      setAmount(amount_formatted.toFixed(6));
+    }
   };
 
   return (
-    <div className={`${theme} convert-wrapper`}>
+    <div style={style} className={`${theme} convert-wrapper`}>
       <h2>{title}</h2>
       <p className="description">{description}</p>
       <p className="convert-learn-more">
@@ -33,20 +45,28 @@ const ConvertCoin = ({
       <section className="contenas">
         <div className="row">
           <p>Available</p>
-          <p>{`${divDecimals(token.balance,token.decimals)} ${token.symbol}`}</p>
+          {token.balance == unlockToken ? (
+            <p>
+              {unlockJsx({ onClick: createVK })} {token.symbol}
+            </p>
+          ) : (
+            <p>{`${token.balance} ${token.symbol}`}</p>
+          )}
         </div>
         <Input
           inverted={isDark}
+          placeholder="0"
           className="convert-input"
           type="number"
-          size="big"
+          size="large"
           value={amount}
           onChange={e => {
-            if (isNaN(parseFloat(e.target.value)) || isNaN(parseFloat(token.balance)) || !token.balance) {
-              return;
-            }
+            // if(e.target.value)
+            // if (isNaN(parseFloat(e.target.value)) || isNaN(parseFloat(token.balance)) || !token.balance) {
+            //   return;
+            // }
 
-            setAmount(parseFloat(divDecimals(e.target.value, token.decimals)));
+            setAmount(e.target.value);
           }}
         />
         <div className="row">
@@ -63,7 +83,7 @@ const ConvertCoin = ({
             100%
           </Button>
         </div>
-        <Button loading={loading} inverted={isDark} secondary={!isDark} onClick={onConvert}>
+        <Button loading={loading} inverted={isDark} secondary={!isDark} onClick={onSubmit}>
           {title}
         </Button>
       </section>
@@ -84,7 +104,9 @@ interface ConvertCoinProps {
     symbol: string;
     decimals: number;
   };
-  amount: number;
-  setAmount: (n: number) => void;
-  onConvert: () => void;
+  amount: string;
+  style?: {};
+  createVK?: () => void;
+  setAmount: (n: string) => void;
+  onSubmit: () => void;
 }
