@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BaseContainer, PageContainer } from 'components';
-import { ConvertCoin } from './components';
+import { ConvertCoin, Token } from './components';
 import { observer } from 'mobx-react';
 import { useStores } from 'stores';
 import { unlockToken, valueToDecimals } from 'utils';
@@ -8,52 +8,77 @@ import { unlockJsx } from 'components/Header/utils';
 import { notify } from '../../blockchain-bridge/scrt/utils';
 import './style.scss';
 
+const SSCRT: Token = {
+  address: process.env.SSCRT_CONTRACT,
+  symbol: 'SSCRT',
+  decimals: 6,
+  balance: '0',
+};
+
 const BuyCrypto = observer(() => {
   const { theme, user } = useStores();
-  const [amountSCRT, setAmountSCRT] = useState<string>('');
-  const [amountSSCRT, setAmountSSCRT] = useState<string>('');
-  const [sscrtLoading, setSSCRTLoading] = useState<boolean>(false);
-  const [scrtLoading, setSCRTLoading] = useState<boolean>(false);
+  const [amountWrap, setAmountWrap] = useState<string>('');
+  const [amountUnwrap, setAmountUnwrap] = useState<string>('');
+  const [unwrapLoading, setUnwrapLoading] = useState<boolean>(false);
+  const [wrapLoading, setWrapLoading] = useState<boolean>(false);
+  const [tokenSelected, setTokenSelected] = useState<Token>(SSCRT);
 
-  async function wrapSCRT() {
+  const SCRT: Token = {
+    address: '',
+    balance: user.balanceSCRT,
+    symbol: 'SCRT',
+    // decimals 0 because it's already parsed to it's decimals
+    decimals: 0,
+  };
+
+  useEffect(() => {
+    const SSCRT: Token = {
+      address: process.env.SSCRT_CONTRACT,
+      symbol: 'SSCRT',
+      decimals: 6,
+      balance: user.balanceToken[process.env.SSCRT_CONTRACT],
+    };
+    setTokenSelected(SSCRT);
+  }, [user.balanceToken[process.env.SSCRT_CONTRACT]]);
+
+  async function wrapToken(amount: string, token: Token, callback?: Function) {
     try {
-      setSCRTLoading(true);
-      const amount_convert = valueToDecimals(amountSCRT, '6');
-      const res = await user.secretjsSend.execute(process.env.SSCRT_CONTRACT, { deposit: {} }, '', [
+      setWrapLoading(true);
+      //inputs 1 -> 1000000
+      const amount_convert = valueToDecimals(amount, token.decimals.toString());
+      const res = await user.secretjsSend.asyncExecute(token.address, { deposit: {} }, '', [
         { denom: 'uscrt', amount: amount_convert },
       ]);
-      // TODO: update balances after transaction completed
-      // await user.getBalances();
       notify('success', 'converted ');
+      callback();
     } catch (error) {
       notify('error', error);
     } finally {
-      setAmountSCRT('');
-      setSCRTLoading(false);
+      setAmountWrap('');
+      setWrapLoading(false);
     }
-  };
+  }
 
-  async function unwrapSCRT() {
+  async function unWrapToken(amount: string, token: Token, callback?: Function) {
     try {
-      setSSCRTLoading(true);
-      const amount_convert = valueToDecimals(amountSSCRT, '6');
-      const res = await user.secretjsSend.execute(process.env.SSCRT_CONTRACT, { redeem: { amount: amount_convert } });
-      // TODO: update balances after transaction completed
-      await user.updateSScrtBalance();
-      await user.updateScrtBalance();
+      setUnwrapLoading(true);
+      //inputs 1 -> 1000000
+      const amount_convert = valueToDecimals(amount, token.decimals.toString());
+      const res = await user.secretjsSend.asyncExecute(token.address, { redeem: { amount: amount_convert } });
       notify('success', 'converted ');
+      callback();
     } catch (error) {
       notify('error', error);
     } finally {
-      setAmountSSCRT('');
-      setSSCRTLoading(false);
+      setAmountWrap('');
+      setUnwrapLoading(false);
     }
-  };
+  }
 
-  const createSSCRTViewingKey = async () => {
+  const createVK = async (token: Token) => {
     try {
-      await user.keplrWallet.suggestToken(user.chainId, process.env.SSCRT_CONTRACT);
-      await user.updateSScrtBalance();
+      await user.keplrWallet.suggestToken(user.chainId, token.address);
+      await user.updateBalanceForRewardsToken(token.address);
     } catch (error) {
       console.log(error);
     }
@@ -74,7 +99,7 @@ const BuyCrypto = observer(() => {
               <p>sSCRT Balance</p>
               <p>
                 {unlockToken === user.balanceToken[process.env.SSCRT_CONTRACT] ? (
-                  unlockJsx({ onClick: createSSCRTViewingKey })
+                  unlockJsx({ onClick: () => createVK(tokenSelected) })
                 ) : (
                   <strong>{user.balanceToken[process.env.SSCRT_CONTRACT]}</strong>
                 )}
@@ -103,25 +128,24 @@ const BuyCrypto = observer(() => {
                 description="Convert SCRT to sSCRT, the privacy preserving version of SCRT."
                 theme={theme.currentTheme}
                 learn_link=""
-                // decimals 0 because it's already converted
-                token={{ balance: user.balanceSCRT, symbol: 'SCRT', decimals: 0 }}
-                onSubmit={wrapSCRT}
-                amount={amountSCRT}
-                loading={scrtLoading}
-                setAmount={setAmountSCRT}
+                token={SCRT}
+                onSubmit={() => wrapToken(amountWrap, tokenSelected)}
+                amount={amountWrap}
+                loading={wrapLoading}
+                setAmount={setAmountWrap}
               />
               <ConvertCoin
-                createVK={createSSCRTViewingKey}
+                createVK={() => createVK(tokenSelected)}
                 style={{ marginTop: '30px' }}
                 title="Unwrap"
                 description="Convert sSCRT to SCRT, Secret Network's native public token."
                 theme={theme.currentTheme}
                 learn_link=""
-                token={{ balance: user.balanceToken[process.env.SSCRT_CONTRACT], symbol: 'sSCRT', decimals: 6 }}
-                onSubmit={unwrapSCRT}
-                amount={amountSSCRT}
-                loading={sscrtLoading}
-                setAmount={setAmountSSCRT}
+                token={tokenSelected}
+                onSubmit={() => unWrapToken(amountUnwrap, tokenSelected)}
+                amount={amountUnwrap}
+                loading={unwrapLoading}
+                setAmount={setAmountUnwrap}
               />
             </div>
           </section>

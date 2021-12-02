@@ -6,6 +6,13 @@ import './style.scss';
 
 const FEE = 0.04;
 
+export interface Token {
+  address: string;
+  symbol: string;
+  decimals: number;
+  balance: string;
+}
+
 const ConvertCoin = ({
   title,
   theme,
@@ -29,9 +36,10 @@ const ConvertCoin = ({
     let amount_formatted = parseFloat(formatWithSixDecimals(a * n));
 
     if (token.symbol == 'SCRT' && n == 1) {
+      //take out the fee
       setAmount((amount_formatted - FEE).toFixed(6));
     } else {
-      setAmount(amount_formatted.toFixed(6));
+      setAmount(amount_formatted.toFixed(token.decimals));
     }
   };
 
@@ -95,15 +103,11 @@ export default ConvertCoin;
 
 interface ConvertCoinProps {
   title: string;
-  description: string;
+  description: string | JSX.Element;
   theme: string;
   learn_link: string;
   loading: boolean;
-  token: {
-    balance: string;
-    symbol: string;
-    decimals: number;
-  };
+  token:Token;
   amount: string;
   style?: {};
   createVK?: () => void;
