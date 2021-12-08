@@ -53,7 +53,7 @@ const ConvertCoin = ({
       <section className="contenas">
         <div className="row">
           <p>Available</p>
-          {token.balance == unlockToken ? (
+          {token.balance == unlockToken || !token.balance ? (
             <p>
               {unlockJsx({ onClick: createVK })} {token.symbol}
             </p>
