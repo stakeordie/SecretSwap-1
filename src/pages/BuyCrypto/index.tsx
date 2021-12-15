@@ -50,6 +50,8 @@ const BuyCrypto = observer(() => {
         { denom: 'uscrt', amount: amount_convert },
       ]);
       notify('success', 'converted ');
+      await user.updateSScrtBalance();
+      await user.updateScrtBalance();
       callback();
     } catch (error) {
       notify('error', error);
@@ -66,11 +68,14 @@ const BuyCrypto = observer(() => {
       const amount_convert = valueToDecimals(amount, token.decimals.toString());
       const res = await user.secretjsSend.asyncExecute(token.address, { redeem: { amount: amount_convert } });
       notify('success', 'converted ');
+
+      await user.updateSScrtBalance();
+      await user.updateScrtBalance();
       callback();
     } catch (error) {
       notify('error', error);
     } finally {
-      setAmountWrap('');
+      setAmountUnwrap('');
       setUnwrapLoading(false);
     }
   }
@@ -131,6 +136,7 @@ const BuyCrypto = observer(() => {
                 token={SCRT}
                 onSubmit={() => wrapToken(amountWrap, tokenSelected)}
                 amount={amountWrap}
+                notify={notify}
                 loading={wrapLoading}
                 setAmount={setAmountWrap}
               />
@@ -144,6 +150,7 @@ const BuyCrypto = observer(() => {
                 token={tokenSelected}
                 onSubmit={() => unWrapToken(amountUnwrap, tokenSelected)}
                 amount={amountUnwrap}
+                notify={notify}
                 loading={unwrapLoading}
                 setAmount={setAmountUnwrap}
               />

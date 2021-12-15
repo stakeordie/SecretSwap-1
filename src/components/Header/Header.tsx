@@ -70,7 +70,7 @@ const Header = observer(({forceUpdate}:{forceUpdate:any}) =>{
                     
                     <div className="menu-right">
                       <button className={`btn-secondary`}>
-                        <Link  to="/buy">Buy Crypto</Link>
+                        <Link  to="/buy">Buy / Convert SCRT</Link>
                       </button>
                         
                         <SefiModal

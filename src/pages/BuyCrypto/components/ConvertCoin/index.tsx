@@ -22,6 +22,7 @@ const ConvertCoin = ({
   amount,
   loading,
   style,
+  notify,
   createVK,
   onSubmit,
   setAmount,
@@ -33,14 +34,20 @@ const ConvertCoin = ({
     if (isNaN(a) || !a) {
       return;
     }
-    let amount_formatted = parseFloat(formatWithSixDecimals(a * n));
-
-    if (token.symbol == 'SCRT' && n == 1) {
-      //take out the fee
-      setAmount((amount_formatted - FEE).toFixed(6));
+    let amount_formatted :number= 0;
+    if (token.symbol == 'SCRT') {
+      amount_formatted = parseFloat(formatWithSixDecimals(a * n - FEE));
     } else {
-      setAmount(amount_formatted.toFixed(token.decimals));
+      amount_formatted = parseFloat(formatWithSixDecimals(a * n));
     }
+
+    if (amount_formatted < 0 || isNaN(amount_formatted)){
+      notify('error',`Insuficcient balance to ${title} ${n * 100} %`)
+      return;
+    }
+
+    setAmount(amount_formatted.toString());
+    console.log('amount_formatted', amount_formatted);
   };
 
   return (
@@ -69,11 +76,6 @@ const ConvertCoin = ({
           size="large"
           value={amount}
           onChange={e => {
-            // if(e.target.value)
-            // if (isNaN(parseFloat(e.target.value)) || isNaN(parseFloat(token.balance)) || !token.balance) {
-            //   return;
-            // }
-
             setAmount(e.target.value);
           }}
         />
@@ -107,10 +109,11 @@ interface ConvertCoinProps {
   theme: string;
   learn_link: string;
   loading: boolean;
-  token:Token;
+  token: Token;
   amount: string;
   style?: {};
   createVK?: () => void;
+  notify: Function;
   setAmount: (n: string) => void;
   onSubmit: () => void;
 }
